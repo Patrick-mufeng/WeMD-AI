@@ -68,6 +68,33 @@ python server.py
 
 也可以使用 `start.bat`（Windows）或 `start.sh`（Linux/Mac）一键启动。
 
+### 🚀 免安装 Python 使用（便携版）
+
+> **适合没有 Python 环境的用户**：项目内置了便携 Python 方案，无需手动安装 Python。
+
+```bash
+# 第一步：一键配置（仅需一次，约 45 MB 下载）
+# Windows 用户
+portable\setup_portable.bat
+
+# Linux / macOS 用户
+bash portable/setup_portable.sh
+
+# 第二步：启动（之后每次直接用这个）
+# Windows
+portable\start_portable.bat
+
+# Linux / macOS
+bash portable/start_portable.sh
+```
+
+| 便携版 vs 标准版 | 说明 |
+|------------------|------|
+| `start.bat` / `start.sh` | 需要系统已安装 **Python 3.10+**，运行 `pip install -r requirements.txt` 后使用 |
+| `portable/start_portable.*` | **零依赖**，自动下载嵌入式 Python 到 `python/` 目录，开箱即用 |
+
+> `python/` 目录由 `setup_portable.*` 自动生成，已加入 `.gitignore`，不会提交到仓库。
+
 ---
 
 ## 🔌 API 调用
@@ -142,6 +169,12 @@ WeMD-AI/
 ├── requirements.txt                   # Python 依赖
 ├── start.bat                          # Windows 一键启动
 ├── start.sh                           # Linux/Mac 一键启动
+│
+├── portable/                          # 便携 Python 方案
+│   ├── setup_portable.bat             #   Windows 一键配置
+│   ├── setup_portable.sh              #   Linux/Mac 一键配置
+│   ├── start_portable.bat             #   Windows 便携启动
+│   └── start_portable.sh              #   Linux/Mac 便携启动
 │
 ├── templates/
 │   └── index.html                     # Web 前端（玻璃拟态 UI）

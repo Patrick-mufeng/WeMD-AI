@@ -11,6 +11,13 @@ venv/
 .venv/
 env/
 
+# 便携 Python 环境（由 portable/setup_portable.* 自动生成）
+python/
+python-*.zip
+python-*.tgz
+python-*.tar.xz
+get-pip.py
+
 # IDE
 .idea/
 .vscode/
