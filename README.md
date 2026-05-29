@@ -14,6 +14,9 @@
 
 它解决了公众号创作者最头疼的问题：给文章做排版。不再需要 135 编辑器/秀米一个个拖组件，AI 会根据你的文章内容自动设计版面、选择配色、生成头部信息卡和尾部互动引导。
 
+<img width="1920" height="929" alt="image" src="https://github.com/user-attachments/assets/de0e4f47-93e6-40b8-8f9d-564763e37002" />
+
+
 ---
 
 ## ✨ 功能特性
