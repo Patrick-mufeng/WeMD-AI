@@ -103,7 +103,7 @@ def build_ai_prompt(article, theme_name, design_spec, custom_style=""):
 # API 路由
 # ============================================================
 
-MAIN_SPEC_FILE = BASE_DIR / "公众号HTML排版设计规范.md"
+MAIN_SPEC_FILE = BASE_DIR / "docs" / "公众号HTML排版设计规范.md"
 _SPEC_CACHE = None
 
 # ============================================================
