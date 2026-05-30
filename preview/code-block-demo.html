@@ -1,0 +1,162 @@
+<section style="width:100%;max-width:677px;background:transparent;padding:0 8px 24px;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;line-height:1.85;color:#1d1d1f;letter-spacing:0.3px;box-sizing:border-box;margin:0 auto">
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 文章头部 -->
+  <!-- ════════════════════════════════════════════ -->
+  <section style="text-align:center;padding:28px 0 18px;box-sizing:border-box;">
+    <section style="display:inline-block;padding:3px 12px;background:#171717;color:#fff;font-size:9px;font-weight:bold;letter-spacing:2px;box-sizing:border-box;">DESIGN SPEC</section>
+    <p style="font-size:22px;font-weight:bold;color:#171717;letter-spacing:1px;line-height:1.4;margin:8px 0 0;box-sizing:border-box;">代码块组件预览</p>
+    <p style="font-size:11px;color:#888;margin:6px 0 0;box-sizing:border-box;">5.17 Code Block · 三种变体</p>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 变体一：完整代码文件（带顶部栏 + 语法高亮） -->
+  <!-- ════════════════════════════════════════════ -->
+  <section style="margin:32px 0 12px;display:flex;align-items:flex-start;gap:8px;box-sizing:border-box;">
+    <section style="width:3px;height:18px;background:#171717;flex-shrink:0;box-sizing:border-box;"></section>
+    <section style="flex:1;box-sizing:border-box;">
+      <p style="font-size:10px;font-weight:bold;color:#888;letter-spacing:2px;margin:0 0 2px;">VARIANT A</p>
+      <p style="font-size:16px;font-weight:bold;color:#171717;margin:0;">完整代码文件 + 语法高亮</p>
+    </section>
+  </section>
+
+  <p style="margin:8px 0;text-align:justify;font-size:14px;color:#4d4d4d;line-height:1.85;letter-spacing:0.3px;box-sizing:border-box;">
+    带 macOS 风格三色圆点顶部栏 + 语言标签 + One Dark 风格语法高亮。适合展示完整代码片段。
+  </p>
+
+  <!-- 变体 A：完整代码块 -->
+  <section style="margin:16px 0;border-radius:8px;overflow:hidden;box-sizing:border-box;max-width:100%!important;">
+    <section style="padding:8px 14px;background:rgba(0,0,0,0.75);display:flex;flex-flow:row;align-items:center;gap:8px;box-sizing:border-box;max-width:100%!important;">
+      <section style="width:10px;height:10px;border-radius:50%;background:#ff5f57;box-sizing:border-box;"></section>
+      <section style="width:10px;height:10px;border-radius:50%;background:#febc2e;box-sizing:border-box;"></section>
+      <section style="width:10px;height:10px;border-radius:50%;background:#28c840;box-sizing:border-box;"></section>
+      <p style="flex:1;text-align:right;font-size:9px;color:rgba(255,255,255,0.5);margin:0;letter-spacing:1px;box-sizing:border-box;max-width:100%!important;">python</p>
+    </section>
+    <section style="padding:14px 16px;background:rgba(0,0,0,0.88);box-sizing:border-box;max-width:100%!important;">
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:rgba(255,255,255,0.9);line-height:1.85;margin:0;white-space:pre-wrap;word-break:break-all;box-sizing:border-box;max-width:100%!important;"><span style="color:#c678dd;">import</span> <span style="color:#e5c07b;">requests</span>
+<span style="color:#c678dd;">import</span> <span style="color:#e5c07b;">json</span>
+
+<span style="color:#5c6370;"># 调用 WeMD AI 排版 API</span>
+<span style="color:#e5c07b;">resp</span> = <span style="color:#e5c07b;">requests</span>.post(
+    <span style="color:#98c379;">"http://localhost:5000/api/generate"</span>,
+    <span style="color:#e5c07b;">headers</span>={<span style="color:#98c379;">"Authorization"</span>: <span style="color:#98c379;">"Bearer sk-xxx"</span>},
+    <span style="color:#e5c07b;">json</span>={
+        <span style="color:#98c379;">"article"</span>: <span style="color:#98c379;">"你的文章内容..."</span>,
+        <span style="color:#98c379;">"theme"</span>: <span style="color:#98c379;">"cyber"</span>
+    }
+)
+<span style="color:#e5c07b;">html</span> = <span style="color:#e5c07b;">resp</span>.json()[<span style="color:#98c379;">"html"</span>]
+<span style="color:#c678dd;">print</span>(<span style="color:#c678dd;">f</span><span style="color:#98c379;">"生成成功: {len(html)} 字符"</span>)</p>
+    </section>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 变体二：内联代码（行内） -->
+  <!-- ════════════════════════════════════════════ -->
+  <section style="margin:32px 0 12px;display:flex;align-items:flex-start;gap:8px;box-sizing:border-box;">
+    <section style="width:3px;height:18px;background:#171717;flex-shrink:0;box-sizing:border-box;"></section>
+    <section style="flex:1;box-sizing:border-box;">
+      <p style="font-size:10px;font-weight:bold;color:#888;letter-spacing:2px;margin:0 0 2px;">VARIANT B</p>
+      <p style="font-size:16px;font-weight:bold;color:#171717;margin:0;">行内代码</p>
+    </section>
+  </section>
+
+  <p style="margin:8px 0;text-align:justify;font-size:14px;color:#4d4d4d;line-height:1.85;letter-spacing:0.3px;box-sizing:border-box;">
+    在正文中嵌入代码片段。使用 <span style="font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px;font-size:12px;">pip install flask</span> 安装依赖，
+    然后设置环境变量 <span style="font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px;font-size:12px;">DEEPSEEK_API_KEY</span>。
+    调用 <span style="font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px;font-size:12px;">/api/generate</span> 端点即可生成排版 HTML。
+    返回的 <span style="font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px;font-size:12px;">html</span> 字段可直接粘贴到微信编辑器。
+  </p>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 变体三：终端命令（暗色 Catppuccin 风） -->
+  <!-- ════════════════════════════════════════════ -->
+  <section style="margin:32px 0 12px;display:flex;align-items:flex-start;gap:8px;box-sizing:border-box;">
+    <section style="width:3px;height:18px;background:#171717;flex-shrink:0;box-sizing:border-box;"></section>
+    <section style="flex:1;box-sizing:border-box;">
+      <p style="font-size:10px;font-weight:bold;color:#888;letter-spacing:2px;margin:0 0 2px;">VARIANT C</p>
+      <p style="font-size:16px;font-weight:bold;color:#171717;margin:0;">终端命令 · Catppuccin 暗色</p>
+    </section>
+  </section>
+
+  <p style="margin:8px 0;text-align:justify;font-size:14px;color:#4d4d4d;line-height:1.85;letter-spacing:0.3px;box-sizing:border-box;">
+    纯暗色终端风格，适合展示 Shell 命令、配置文件、日志输出等。不带动画圆点，更简洁。
+  </p>
+
+  <!-- 变体 C：终端命令 -->
+  <section style="margin:16px 0;border-radius:8px;overflow:hidden;box-sizing:border-box;max-width:100%!important;">
+    <section style="padding:10px 14px;background:#1e1e2e;box-sizing:border-box;max-width:100%!important;">
+      <p style="font-size:11px;color:rgba(255,255,255,0.4);margin:0;letter-spacing:1px;box-sizing:border-box;max-width:100%!important;">$ terminal — 快速开始</p>
+    </section>
+    <section style="padding:12px 16px;background:#181825;box-sizing:border-box;max-width:100%!important;">
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;"><span style="color:#585b70;"># 克隆项目</span></p>
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;"><span style="color:#89b4fa;">git</span> clone https://github.com/Patrick-mufeng/WeMD-AI.git</p>
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;"><span style="color:#89b4fa;">cd</span> WeMD-AI</p>
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:rgba(255,255,255,0.3);line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;"></p>
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;"><span style="color:#585b70;"># 设置 Key 并启动（无需安装 Python）</span></p>
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;"><span style="color:#89b4fa;">set</span> <span style="color:#f9e2af;">DEEPSEEK_API_KEY</span>=sk-your-key</p>
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;">portable\start_portable.bat</p>
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:rgba(255,255,255,0.3);line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;"></p>
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;"><span style="color:#585b70;"># 然后直接在浏览器中调用 API</span></p>
+      <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#a6e3a1;line-height:1.85;margin:0;box-sizing:border-box;max-width:100%!important;">✓ Server running at http://localhost:5000</p>
+    </section>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 变体四：亮色简洁单行 -->
+  <!-- ════════════════════════════════════════════ -->
+  <section style="margin:32px 0 12px;display:flex;align-items:flex-start;gap:8px;box-sizing:border-box;">
+    <section style="width:3px;height:18px;background:#171717;flex-shrink:0;box-sizing:border-box;"></section>
+    <section style="flex:1;box-sizing:border-box;">
+      <p style="font-size:10px;font-weight:bold;color:#888;letter-spacing:2px;margin:0 0 2px;">VARIANT D</p>
+      <p style="font-size:16px;font-weight:bold;color:#171717;margin:0;">亮色简洁 · 单行/短代码</p>
+    </section>
+  </section>
+
+  <p style="margin:8px 0;text-align:justify;font-size:14px;color:#4d4d4d;line-height:1.85;letter-spacing:0.3px;box-sizing:border-box;">
+    浅灰底色 + 深色等宽文字。适合简短的单行命令、配置项或 API 端点路径，不喧宾夺主。
+  </p>
+
+  <!-- 变体 D：亮色简洁 -->
+  <section style="margin:16px 0;padding:12px 16px;background:rgba(0,0,0,0.04);border-radius:6px;box-sizing:border-box;max-width:100%!important;">
+    <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#333;line-height:1.8;margin:0;box-sizing:border-box;max-width:100%!important;">$ pip install flask requests</p>
+  </section>
+
+  <section style="margin:8px 0;padding:12px 16px;background:rgba(0,0,0,0.04);border-radius:6px;box-sizing:border-box;max-width:100%!important;">
+    <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#333;line-height:1.8;margin:0;box-sizing:border-box;max-width:100%!important;">POST /api/generate  →  返回公众号兼容 HTML 片段</p>
+  </section>
+
+  <section style="margin:8px 0;padding:12px 16px;background:rgba(0,0,0,0.04);border-radius:6px;box-sizing:border-box;max-width:100%!important;">
+    <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#333;line-height:1.8;margin:0;box-sizing:border-box;max-width:100%!important;">DEEPSEEK_API_KEY = "sk-xxxxxxxxxxxxxxxxxxxxxxxx"</p>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 小结 -->
+  <!-- ════════════════════════════════════════════ -->
+  <section style="margin:32px 0 12px;display:flex;align-items:flex-start;gap:8px;box-sizing:border-box;">
+    <section style="width:3px;height:18px;background:#171717;flex-shrink:0;box-sizing:border-box;"></section>
+    <section style="flex:1;box-sizing:border-box;">
+      <p style="font-size:16px;font-weight:bold;color:#171717;margin:0;">小结：四种场景对应四种变体</p>
+    </section>
+  </section>
+
+  <section style="margin:20px 0;padding:16px;background:linear-gradient(135deg,#fafafa,#f5f5f5);border-left:4px solid #171717;box-sizing:border-box;">
+    <p style="font-size:13px;color:#555;line-height:1.8;margin:4px 0 0;">
+
+      <strong style="color:#171717;">A · 完整代码文件</strong> — 红黄绿圆点 + 语言标签 + 语法高亮，适合展示完整代码<br/>
+      <strong style="color:#171717;">B · 行内代码</strong> — 灰色胶囊底，适合正文中嵌入 <span style="font-family:monospace;background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px;font-size:11px;">variable</span> 或 <span style="font-family:monospace;background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px;font-size:11px;">函数名</span><br/>
+      <strong style="color:#171717;">C · 暗色终端</strong> — Catppuccin 配色，适合 Shell 命令 / 日志 / 配置<br/>
+      <strong style="color:#171717;">D · 亮色简洁</strong> — 浅灰底 + 深色字，适合单行短代码，不破坏阅读流<br/>
+    </p>
+  </section>
+
+  <!-- ════════════════════════════════════════════ -->
+  <!-- 尾部互动卡 -->
+  <!-- ════════════════════════════════════════════ -->
+  <section style="margin:36px 0 24px;padding:24px 16px;text-align:center;background:linear-gradient(135deg,#fafafa,#f5f5f5);box-sizing:border-box;max-width:100%!important;">
+    <p style="font-size:10px;font-weight:bold;color:#888;letter-spacing:2px;margin:0 0 4px;box-sizing:border-box;max-width:100%!important;">— PREVIEW END —</p>
+    <p style="font-size:13px;font-weight:bold;color:#171717;margin:8px 0 4px;box-sizing:border-box;max-width:100%!important;">以上就是代码块组件的四种形态</p>
+    <p style="font-size:9px;color:#aaa;margin:10px 0 0;box-sizing:border-box;max-width:100%!important;">Vercel 极客主题 · 纯黑白灰配色</p>
+  </section>
+
+</section>

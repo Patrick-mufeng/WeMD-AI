@@ -36,3 +36,6 @@ instance/
 
 # Git
 .git/
+
+# Reasonix internal
+.reasonix/

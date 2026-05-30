@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WeMD 组件卡片 — 3:4 预览</title>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+  :root {
+    --card-w: 420px;
+    --card-h: 560px;
+    --gap: 28px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: #1a1a1a;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    user-select: none;
+    -webkit-user-select: none;
+    padding: 20px;
+  }
+
+  /* ── 顶部工具栏 ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: #fff;
+    color: #171717;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+  .btn-download:hover {
+    background: #e0e0e0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .btn-download:active {
+    transform: scale(0.97);
+  }
+
+  .btn-download svg {
+    width: 18px; height: 18px;
+  }
+
+  /* ── 主容器 ── */
+  .viewer {
+    display: flex;
+    align-items: center;
+    gap: var(--gap);
+  }
+
+  /* ── 箭头按钮 ── */
+  .nav-arrow {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.06);
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    backdrop-filter: blur(8px);
+  }
+  .nav-arrow:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.5);
+  }
+  .nav-arrow:active {
+    transform: scale(0.93);
+  }
+  .nav-arrow.disabled {
+    opacity: 0.2;
+    pointer-events: none;
+  }
+
+  /* ── 卡片舞台 ── */
+  .card-stage {
+    position: relative;
+    width: var(--card-w);
+    height: var(--card-h);
+    flex-shrink: 0;
+  }
+
+  .card-slot {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow:
+      0 8px 40px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(255,255,255,0.08);
+    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.35s ease;
+    will-change: transform, opacity;
+  }
+
+  .card-slot.exit-left {
+    transform: translateX(-120%) scale(0.92);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .card-slot.exit-right {
+    transform: translateX(120%) scale(0.92);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .card-slot.enter-left {
+    transform: translateX(-80%) scale(0.92);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .card-slot.enter-right {
+    transform: translateX(80%) scale(0.92);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .card-slot.active {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+
+  /* ── 卡片内部 ── */
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 32px 28px 36px;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+  }
+  .card-inner::-webkit-scrollbar { width: 3px; }
+  .card-inner::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+  /* 标题栏通用 */
+  .card-section-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+  }
+  .card-section-head .bar {
+    width: 3px;
+    height: 18px;
+    background: #171717;
+    flex-shrink: 0;
+  }
+  .card-section-head .num {
+    font-size: 10px;
+    font-weight: bold;
+    color: #888;
+    letter-spacing: 1.5px;
+  }
+  .card-section-head .title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #171717;
+  }
+
+  /* ── 底部指示器 ── */
+  .indicators {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+  .dot.active {
+    background: #fff;
+    box-shadow: 0 0 8px rgba(255,255,255,0.4);
+    transform: scale(1.2);
+  }
+  .dot:hover {
+    background: rgba(255,255,255,0.5);
+  }
+
+  .counter {
+    color: rgba(255,255,255,0.5);
+    font-size: 13px;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    color: #171717;
+    padding: 12px 28px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    box-shadow: 0 6px 30px rgba(0,0,0,0.35);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s;
+  }
+  .toast.show {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* ── 响应式 ── */
+  @media (max-width: 700px) {
+    :root {
+      --card-w: 300px;
+      --card-h: 400px;
+      --gap: 8px;
+    }
+    .nav-arrow { width: 36px; height: 36px; font-size: 16px; }
+    .card-inner { padding: 20px 16px 24px; }
+  }
+  @media (max-width: 420px) {
+    :root {
+      --card-w: 260px;
+      --card-h: 347px;
+      --gap: 4px;
+    }
+    .nav-arrow { width: 30px; height: 30px; font-size: 14px; border-width: 1.5px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 工具栏 -->
+<div class="toolbar">
+  <button class="btn-download" onclick="downloadCard()" title="下载当前卡片为 4K PNG">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+      <polyline points="7 10 12 15 17 10"/>
+      <line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    下载 4K 图片
+  </button>
+</div>
+
+<!-- 卡片查看器 -->
+<div class="viewer">
+  <button class="nav-arrow" id="btn-prev" onclick="prevCard()" title="上一张 (← 键)">◀</button>
+  <div class="card-stage" id="cardStage"></div>
+  <button class="nav-arrow" id="btn-next" onclick="nextCard()" title="下一张 (→ 键)">▶</button>
+</div>
+
+<!-- 指示器 -->
+<div class="indicators" id="indicators"></div>
+<div class="counter" id="counter"></div>
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- 卡片模板（隐藏，由 JS 填充） -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<template id="card-tmpl">
+  <div class="card-inner"></div>
+</template>
+
+<script>
+// ============================================================
+// 卡片数据 — 15 张 3:4 卡片
+// ============================================================
+const cardsData = [
+  // ── Card 1: 封面 / 文章头部 ──
+  {
+    html: `
+      <div style="text-align:center;padding:20px 0;flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div style="display:inline-block;padding:3px 14px;background:#171717;color:#fff;font-size:9px;font-weight:bold;letter-spacing:2px;">DESIGN SPEC</div>
+        <p style="font-size:24px;font-weight:bold;color:#171717;letter-spacing:1px;line-height:1.4;margin:12px 0 4px;">WeMD 组件全览</p>
+        <p style="font-size:11px;color:#888;margin:6px 0 0;">5.1 ~ 5.17 · 15 个排版组件</p>
+        <div style="width:40px;height:1px;background:#ddd;margin:24px auto 18px;"></div>
+        <p style="font-size:12px;color:#aaa;line-height:1.7;">100% 内联样式<br>可直接粘贴公众号编辑器</p>
+      </div>`
+  },
+
+  // ── Card 2: 文章头部信息卡 ──
+  {
+    label: '5.14 文章头部信息卡',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.14</p><p class="title">文章头部信息卡</p></div></div>
+      <div style="padding:16px 14px;background:linear-gradient(135deg,#fafafa,#f0f0f0);border-radius:8px;">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+          <span style="display:inline-block;padding:3px 10px;background:#171717;color:#fff;font-size:8px;font-weight:bold;letter-spacing:1.5px;">设计规范</span>
+          <span style="display:inline-block;padding:3px 10px;background:rgba(0,0,0,0.06);color:#888;font-size:8px;letter-spacing:1px;">公众号</span>
+          <span style="display:inline-block;padding:3px 10px;background:rgba(0,0,0,0.06);color:#888;font-size:8px;letter-spacing:1px;">HTML</span>
+        </div>
+        <div style="display:flex;gap:16px;margin-bottom:6px;">
+          <p style="font-size:9px;color:#888;margin:0;">📄 约 3,500 字</p>
+          <p style="font-size:9px;color:#888;margin:0;">⏱ 阅读 6 分钟</p>
+        </div>
+        <p style="font-size:12px;color:#4d4d4d;line-height:1.7;margin:8px 0 0;">一览 WeMD AI 设计规范中全部 15 个排版组件的实际渲染效果，所有代码 100% 内联、可直接粘贴到公众号编辑器。</p>
+      </div>`
+  },
+
+  // ── Card 3: 章节标题 + 正文 ──
+  {
+    label: '5.2 章节标题 · 5.3 正文段落',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.2</p><p class="title">章节标题</p></div></div>
+      <p style="font-size:10px;font-weight:bold;color:#888;letter-spacing:2px;margin:0 0 6px 11px;">5.3 正文段落</p>
+      <p style="text-align:justify;font-size:14px;color:#4d4d4d;line-height:1.85;letter-spacing:0.3px;">
+        WeMD AI 的设计规范定义了严格的公众号 HTML 生成规则。所有组件均从真实公众号源码（135 编辑器、秀米）逆向推导而来，确保生成的内容在微信客户端中完整渲染、样式不丢失。
+      </p>
+      <p style="text-align:justify;font-size:14px;color:#4d4d4d;line-height:1.85;letter-spacing:0.3px;margin-top:10px;">
+        正文基准字号 14px，行高 1.85，字间距 0.3px——这是经过大量公众号文章测试的最佳阅读参数。所有块级容器使用 &lt;section&gt; 标签，禁止使用 &lt;div&gt;。
+      </p>`
+  },
+
+  // ── Card 4: 强调卡片 ──
+  {
+    label: '5.4 强调卡片',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.4</p><p class="title">强调卡片</p></div></div>
+      <div style="padding:18px 16px;background:linear-gradient(135deg,#fafafa,#f0f0f0);border-left:4px solid #171717;border-radius:0 8px 8px 0;margin-top:8px;">
+        <span style="display:inline-block;padding:2px 10px;background:#171717;color:#fff;font-size:9px;font-weight:bold;letter-spacing:2px;margin-bottom:6px;">核心</span>
+        <p style="font-size:15px;font-weight:bold;color:#171717;margin:4px 0;">每个元素必须携带 box-sizing 和 max-width</p>
+        <p style="font-size:13px;color:#555;line-height:1.8;margin:4px 0 0;">这是公众号渲染引擎的硬性要求，无一例外。所有块级容器必须使用 &lt;section&gt; 标签，禁止使用 &lt;div&gt;。</p>
+      </div>`
+  },
+
+  // ── Card 5: 引用/金句 — 风格 A + B ──
+  {
+    label: '5.5 引用/金句 · 风格 A / B',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.5</p><p class="title">引用 / 金句</p></div></div>
+      <p style="font-size:9px;font-weight:bold;color:#aaa;letter-spacing:1.5px;margin:0 0 4px 11px;">风格A · 左侧竖线</p>
+      <div style="padding:6px 0 6px 12px;border-left:3px solid #171717;margin-bottom:16px;">
+        <p style="font-size:15px;font-weight:bold;color:#171717;line-height:1.85;letter-spacing:0.5px;margin:0;">少即是多。最经典的 editorial 引文样式。</p>
+      </div>
+      <p style="font-size:9px;font-weight:bold;color:#aaa;letter-spacing:1.5px;margin:0 0 2px 11px;">风格B · 大引号装饰</p>
+      <p style="font-size:36px;color:#171717;line-height:0.6;margin:0 0 -6px 0;">"</p>
+      <p style="font-size:14px;color:#333;line-height:1.85;letter-spacing:0.5px;margin:0;padding:0 0 0 8px;">好的文字自己会呼吸。</p>`
+  },
+
+  // ── Card 6: 引用/金句 — 风格 C + D + E ──
+  {
+    label: '5.5 引用/金句 · 风格 C / D / E',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.5</p><p class="title">引用 / 金句（续）</p></div></div>
+      <p style="font-size:9px;font-weight:bold;color:#aaa;letter-spacing:1.5px;margin:0 0 4px 11px;">风格C · 渐变底色条</p>
+      <div style="padding:8px 12px;background:linear-gradient(90deg,rgba(0,0,0,0.04),transparent);border-radius:4px;margin-bottom:12px;">
+        <p style="font-size:13px;font-weight:bold;color:#171717;line-height:1.7;margin:0;">这个价格已经低到，用合规手段低于 7 折就不可能盈利。</p>
+      </div>
+      <p style="font-size:9px;font-weight:bold;color:#aaa;letter-spacing:1.5px;margin:0 0 4px 11px;">风格D · 标签徽章式</p>
+      <div style="padding:8px 12px;background:rgba(0,0,0,0.02);border-radius:6px;margin-bottom:12px;">
+        <span style="display:inline-block;padding:2px 8px;background:#171717;color:#fff;font-size:8px;font-weight:bold;letter-spacing:1.5px;margin-bottom:6px;border-radius:3px;">金句</span>
+        <p style="font-size:13px;color:#171717;line-height:1.7;margin:0;">你以为你在挑模型，其实你是在赌人品。</p>
+      </div>
+      <p style="font-size:9px;font-weight:bold;color:#aaa;letter-spacing:1.5px;margin:0 0 4px 11px;">风格E · 居中细线</p>
+      <div style="text-align:center;padding:6px 0;">
+        <div style="width:30px;height:1px;background:#171717;margin:0 auto 6px;"></div>
+        <p style="font-size:14px;color:#171717;line-height:1.7;margin:0;">螳螂捕蝉，黄雀在后。</p>
+        <div style="width:30px;height:1px;background:#171717;margin:6px auto 0;"></div>
+      </div>`
+  },
+
+  // ── Card 7: 数据展示（三列） ──
+  {
+    label: '5.6 数据展示（三列）',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.6</p><p class="title">数据展示（三列）</p></div></div>
+      <div style="display:flex;justify-content:space-around;margin-top:30px;gap:8px;">
+        <div style="flex:0 0 30%;text-align:center;padding:22px 8px;background:#fafafa;border-radius:8px;">
+          <p style="font-size:32px;font-weight:bold;color:#171717;margin:0;line-height:1.2;">9</p>
+          <p style="font-size:10px;color:#888;margin:6px 0 0;">内置主题</p>
+        </div>
+        <div style="flex:0 0 30%;text-align:center;padding:22px 8px;background:#fafafa;border-radius:8px;">
+          <p style="font-size:32px;font-weight:bold;color:#171717;margin:0;line-height:1.2;">17</p>
+          <p style="font-size:10px;color:#888;margin:6px 0 0;">排版组件</p>
+        </div>
+        <div style="flex:0 0 30%;text-align:center;padding:22px 8px;background:#fafafa;border-radius:8px;">
+          <p style="font-size:32px;font-weight:bold;color:#171717;margin:0;line-height:1.2;">100%</p>
+          <p style="font-size:10px;color:#888;margin:6px 0 0;">内联样式</p>
+        </div>
+      </div>`
+  },
+
+  // ── Card 8: 横向步骤流 ──
+  {
+    label: '5.7 横向步骤流',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.7</p><p class="title">横向步骤流</p></div></div>
+      <div style="padding:20px 12px;background:#fafafa;border-radius:8px;margin-top:8px;">
+        <div style="display:flex;justify-content:space-around;text-align:center;">
+          <div style="flex:1;padding:8px;">
+            <div style="display:inline-block;width:32px;height:32px;line-height:32px;background:#171717;color:#fff;font-size:12px;font-weight:bold;border-radius:50%;margin-bottom:8px;">1</div>
+            <p style="font-size:12px;font-weight:bold;color:#171717;margin:0;">输入文章</p>
+            <p style="font-size:10px;color:#888;margin:3px 0 0;">Markdown</p>
+          </div>
+          <div style="flex:1;padding:8px;">
+            <div style="display:inline-block;width:32px;height:32px;line-height:32px;background:#171717;color:#fff;font-size:12px;font-weight:bold;border-radius:50%;margin-bottom:8px;">2</div>
+            <p style="font-size:12px;font-weight:bold;color:#171717;margin:0;">选择主题</p>
+            <p style="font-size:10px;color:#888;margin:3px 0 0;">9 套预设</p>
+          </div>
+          <div style="flex:1;padding:8px;">
+            <div style="display:inline-block;width:32px;height:32px;line-height:32px;background:#171717;color:#fff;font-size:12px;font-weight:bold;border-radius:50%;margin-bottom:8px;">3</div>
+            <p style="font-size:12px;font-weight:bold;color:#171717;margin:0;">AI 排版</p>
+            <p style="font-size:10px;color:#888;margin:3px 0 0;">DeepSeek</p>
+          </div>
+        </div>
+      </div>`
+  },
+
+  // ── Card 9: 纵向步骤流 ──
+  {
+    label: '5.8 纵向步骤流',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.8</p><p class="title">纵向步骤流</p></div></div>
+      <div style="padding:16px;background:#fafafa;border-radius:8px;margin-top:8px;display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="width:28px;height:28px;line-height:28px;background:#171717;color:#fff;font-size:11px;font-weight:bold;text-align:center;border-radius:50%;flex-shrink:0;">1</div>
+          <div><p style="font-size:13px;font-weight:bold;color:#171717;margin:0;">克隆项目</p><p style="font-size:11px;color:#888;margin:3px 0 0;">git clone 后进入目录</p></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="width:28px;height:28px;line-height:28px;background:#171717;color:#fff;font-size:11px;font-weight:bold;text-align:center;border-radius:50%;flex-shrink:0;">2</div>
+          <div><p style="font-size:13px;font-weight:bold;color:#171717;margin:0;">设置 API Key</p><p style="font-size:11px;color:#888;margin:3px 0 0;">环境变量或 Header 传入</p></div>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="width:28px;height:28px;line-height:28px;background:#171717;color:#fff;font-size:11px;font-weight:bold;text-align:center;border-radius:50%;flex-shrink:0;">3</div>
+          <div><p style="font-size:13px;font-weight:bold;color:#171717;margin:0;">启动服务</p><p style="font-size:11px;color:#888;margin:3px 0 0;">运行 bat，打开浏览器</p></div>
+        </div>
+      </div>`
+  },
+
+  // ── Card 10: 标签徽章 ──
+  {
+    label: '5.9 标签徽章',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.9</p><p class="title">标签徽章</p></div></div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:40px;">
+        <span style="display:inline-block;padding:5px 14px;background:#171717;color:#fff;font-size:11px;font-weight:bold;border-radius:4px;">Python</span>
+        <span style="display:inline-block;padding:5px 14px;background:#555;color:#fff;font-size:11px;font-weight:bold;border-radius:4px;">Flask</span>
+        <span style="display:inline-block;padding:5px 14px;background:#888;color:#fff;font-size:11px;font-weight:bold;border-radius:4px;">DeepSeek</span>
+        <span style="display:inline-block;padding:5px 14px;background:#ccc;color:#333;font-size:11px;font-weight:bold;border-radius:4px;">公众号</span>
+        <span style="display:inline-block;padding:5px 14px;background:#f0f0f0;color:#555;font-size:11px;font-weight:bold;border-radius:4px;">REST API</span>
+        <span style="display:inline-block;padding:5px 14px;background:#e8e8e8;color:#333;font-size:11px;font-weight:bold;border-radius:4px;">HTML</span>
+        <span style="display:inline-block;padding:5px 14px;background:#d0d0d0;color:#333;font-size:11px;font-weight:bold;border-radius:4px;">CSS</span>
+        <span style="display:inline-block;padding:5px 14px;background:#bbb;color:#fff;font-size:11px;font-weight:bold;border-radius:4px;">WeChat</span>
+      </div>`
+  },
+
+  // ── Card 11: 提示块 ──
+  {
+    label: '5.10 提示块',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.10</p><p class="title">提示块</p></div></div>
+      <div style="padding:12px 14px;background:#fafafa;border-left:3px solid #171717;margin-bottom:14px;border-radius:0 6px 6px 0;">
+        <p style="font-size:12px;color:#555;line-height:1.8;margin:0;"><strong style="color:#171717;">TIP</strong> 所有 CSS 必须内联在 style 属性中，禁止使用 &lt;style&gt; 标签和 class 选择器。公众号编辑器会剔除所有非内联样式。</p>
+      </div>
+      <div style="padding:12px 14px;background:#f5f5f5;border-left:3px solid #888;border-radius:0 6px 6px 0;">
+        <p style="font-size:12px;color:#555;line-height:1.8;margin:0;"><strong style="color:#888;">NOTE</strong> 正文基准字号为 14px，行高 1.85，字间距 0.3px。这是经过大量公众号文章测试的最佳阅读参数。</p>
+      </div>`
+  },
+
+  // ── Card 12: CTA 行动召唤 ──
+  {
+    label: '5.11 CTA 行动召唤',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.11</p><p class="title">CTA 行动召唤</p></div></div>
+      <div style="text-align:center;padding:28px 16px;background:linear-gradient(135deg,#fafafa,#f0f0f0);border-radius:10px;margin-top:12px;">
+        <p style="font-size:9px;font-weight:bold;color:#888;letter-spacing:2px;margin:0 0 6px;">GET STARTED</p>
+        <p style="font-size:15px;font-weight:bold;color:#171717;margin:0 0 16px;">准备好给你的文章做 AI 排版了吗？</p>
+        <span style="display:inline-block;padding:10px 28px;background:#171717;color:#fff;font-size:13px;font-weight:bold;letter-spacing:1px;border-radius:6px;">立即开始</span>
+      </div>`
+  },
+
+  // ── Card 13: 分割线 + 图片展示 ──
+  {
+    label: '5.12 分割线 · 5.13 图片',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.12</p><p class="title">分割线</p></div></div>
+      <p style="text-align:center;margin:8px 0 20px;font-size:15px;color:#ddd;letter-spacing:6px;">· · ·</p>
+      <p style="font-size:9px;font-weight:bold;color:#aaa;letter-spacing:1.5px;margin:0 0 6px 11px;">5.13 多图横向滑动</p>
+      <div style="overflow-x:auto;border-radius:6px;">
+        <div style="display:flex;gap:6px;">
+          <div style="flex-shrink:0;width:100px;height:70px;background:#171717;border-radius:6px;display:flex;align-items:center;justify-content:center;"><span style="color:#fff;font-size:10px;font-weight:bold;">图 1</span></div>
+          <div style="flex-shrink:0;width:100px;height:70px;background:#555;border-radius:6px;display:flex;align-items:center;justify-content:center;"><span style="color:#fff;font-size:10px;font-weight:bold;">图 2</span></div>
+          <div style="flex-shrink:0;width:100px;height:70px;background:#888;border-radius:6px;display:flex;align-items:center;justify-content:center;"><span style="color:#fff;font-size:10px;font-weight:bold;">图 3</span></div>
+          <div style="flex-shrink:0;width:100px;height:70px;background:#bbb;border-radius:6px;display:flex;align-items:center;justify-content:center;"><span style="color:#fff;font-size:10px;font-weight:bold;">图 4</span></div>
+          <div style="flex-shrink:0;width:100px;height:70px;background:#ddd;border-radius:6px;display:flex;align-items:center;justify-content:center;"><span style="color:#555;font-size:10px;font-weight:bold;">图 5</span></div>
+        </div>
+      </div>
+      <p style="font-size:9px;color:#aaa;margin:10px 0 0;text-align:center;">← 左右滑动查看 →</p>`
+  },
+
+  // ── Card 14: 代码块 ──
+  {
+    label: '5.17 代码块',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.17</p><p class="title">代码块</p></div></div>
+      <div style="border-radius:8px;overflow:hidden;margin-top:4px;">
+        <div style="padding:6px 12px;background:rgba(0,0,0,0.78);display:flex;align-items:center;gap:6px;">
+          <span style="width:9px;height:9px;border-radius:50%;background:#ff5f57;display:inline-block;"></span>
+          <span style="width:9px;height:9px;border-radius:50%;background:#febc2e;display:inline-block;"></span>
+          <span style="width:9px;height:9px;border-radius:50%;background:#28c840;display:inline-block;"></span>
+          <span style="flex:1;text-align:right;font-size:9px;color:rgba(255,255,255,0.45);">python</span>
+        </div>
+        <div style="padding:12px 14px;background:rgba(0,0,0,0.88);font-size:10.5px;font-family:'SF Mono','Menlo','Consolas',monospace;color:#e5c07b;line-height:1.8;white-space:pre-wrap;word-break:break-all;">
+<span style="color:#c678dd;">import</span> <span style="color:#e5c07b;">flask</span>
+<span style="color:#c678dd;">from</span> <span style="color:#e5c07b;">flask</span> <span style="color:#c678dd;">import</span> <span style="color:#e5c07b;">Flask</span>
+
+<span style="color:#e5c07b;">app</span> = <span style="color:#e5c07b;">Flask</span>(<span style="color:#e5c07b;">__name__</span>)
+
+<span style="color:#c678dd;">@app.route</span>(<span style="color:#98c379;">"/api/themes"</span>)
+<span style="color:#c678dd;">def</span> <span style="color:#61afef;">themes</span>():
+    <span style="color:#c678dd;">return</span> <span style="color:#e5c07b;">jsonify</span>({
+        <span style="color:#98c379;">"ok"</span>: <span style="color:#d19a66;">True</span>
+    })</div>
+      </div>
+      <div style="border-radius:8px;overflow:hidden;margin-top:10px;">
+        <div style="padding:6px 12px;background:#1e1e2e;"><span style="font-size:9px;color:rgba(255,255,255,0.35);">$ terminal</span></div>
+        <div style="padding:10px 14px;background:#181825;font-size:10.5px;font-family:'SF Mono','Menlo','Consolas',monospace;color:#cdd6f4;line-height:1.8;">
+<span style="color:#585b70;"># 一键启动</span>
+<span style="color:#a6e3a1;">$</span> portable\start_portable.bat</div>
+      </div>`
+  },
+
+  // ── Card 15: 文章结尾互动卡 ──
+  {
+    label: '5.15 文章结尾互动卡',
+    html: `
+      <div class="card-section-head"><div class="bar"></div><div><p class="num">5.15</p><p class="title">文章结尾互动卡</p></div></div>
+      <div style="text-align:center;padding:24px 16px;background:linear-gradient(135deg,#fafafa,#f0f0f0);border-radius:10px;margin-top:8px;">
+        <p style="font-size:10px;font-weight:bold;color:#888;letter-spacing:2px;margin:0 0 4px;">— THE END —</p>
+        <p style="font-size:13px;font-weight:bold;color:#171717;margin:8px 0 8px;">如果觉得有用</p>
+        <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;">
+          <span style="display:inline-block;padding:8px 16px;background:#171717;color:#fff;font-size:10px;font-weight:bold;letter-spacing:1px;border-radius:6px;">👍 点个赞</span>
+          <span style="display:inline-block;padding:8px 16px;background:#555;color:#fff;font-size:10px;font-weight:bold;letter-spacing:1px;border-radius:6px;">⭐ 在看</span>
+          <span style="display:inline-block;padding:8px 16px;background:#f0f0f0;color:#333;font-size:10px;font-weight:bold;letter-spacing:1px;border:1px solid #ddd;border-radius:6px;">🔗 转发</span>
+        </div>
+        <p style="font-size:9px;color:#aaa;margin:10px 0 0;">谢谢你看我的文章，我们下篇再见。</p>
+      </div>`
+  }
+];
+
+// ============================================================
+// 状态
+// ============================================================
+let currentIdx = 0;
+const total = cardsData.length;
+let renderedSlots = []; // { idx, el }
+
+// ============================================================
+// 初始化
+// ============================================================
+const stage = document.getElementById('cardStage');
+const indicatorsRow = document.getElementById('indicators');
+const counterEl = document.getElementById('counter');
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+
+function buildIndicators() {
+  indicatorsRow.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'dot' + (i === currentIdx ? ' active' : '');
+    dot.addEventListener('click', () => goTo(i));
+    indicatorsRow.appendChild(dot);
+  }
+}
+
+function updateCounter() {
+  counterEl.textContent = `${currentIdx + 1} / ${total}`;
+}
+
+function updateArrows() {
+  btnPrev.classList.toggle('disabled', currentIdx === 0);
+  btnNext.classList.toggle('disabled', currentIdx === total - 1);
+}
+
+function updateIndicators() {
+  const dots = indicatorsRow.querySelectorAll('.dot');
+  dots.forEach((d, i) => d.classList.toggle('active', i === currentIdx));
+}
+
+// ── 创建单个卡片 DOM ──
+function createCardEl(idx) {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'card-slot';
+  wrapper.setAttribute('data-idx', idx);
+
+  const inner = document.createElement('div');
+  inner.className = 'card-inner';
+  inner.innerHTML = cardsData[idx].html;
+  wrapper.appendChild(inner);
+  return wrapper;
+}
+
+// ── 渲染当前卡片 + 相邻 ──
+function render() {
+  // 清空舞台
+  stage.innerHTML = '';
+  renderedSlots = [];
+
+  // 需要渲染的索引：当前 + 左右各1
+  const indices = new Set();
+  indices.add(currentIdx);
+  if (currentIdx > 0) indices.add(currentIdx - 1);
+  if (currentIdx < total - 1) indices.add(currentIdx + 1);
+
+  indices.forEach(idx => {
+    const el = createCardEl(idx);
+    stage.appendChild(el);
+    renderedSlots.push({ idx, el });
+  });
+
+  // 设置动画类名
+  renderedSlots.forEach(({ idx, el }) => {
+    el.classList.remove('active', 'exit-left', 'exit-right', 'enter-left', 'enter-right');
+    if (idx === currentIdx) {
+      el.classList.add('active');
+    } else if (idx < currentIdx) {
+      el.classList.add('exit-left');
+    } else {
+      el.classList.add('exit-right');
+    }
+  });
+
+  updateArrows();
+  updateCounter();
+  updateIndicators();
+}
+
+// ── 切换 ──
+function goTo(idx) {
+  if (idx === currentIdx || idx < 0 || idx >= total) return;
+
+  const oldIdx = currentIdx;
+  const direction = idx > currentIdx ? 'right' : 'left';
+  currentIdx = idx;
+
+  // 先让旧卡片飞出
+  const oldSlot = renderedSlots.find(s => s.idx === oldIdx);
+  if (oldSlot) {
+    oldSlot.el.classList.remove('active');
+    oldSlot.el.classList.add(direction === 'right' ? 'exit-left' : 'exit-right');
+  }
+
+  // 检查新卡片是否已渲染
+  let newSlot = renderedSlots.find(s => s.idx === idx);
+
+  if (!newSlot) {
+    // 需要创建新卡片
+    const el = createCardEl(idx);
+    el.classList.add(direction === 'right' ? 'enter-right' : 'enter-left');
+    stage.appendChild(el);
+    renderedSlots.push({ idx, el });
+    newSlot = { idx, el };
+
+    // 强制回流后添加 active
+    void el.offsetWidth;
+    el.classList.remove('enter-right', 'enter-left');
+    el.classList.add('active');
+  } else {
+    // 已存在，只需要改类名
+    newSlot.el.classList.remove('exit-left', 'exit-right', 'enter-left', 'enter-right');
+    newSlot.el.classList.add('active');
+  }
+
+  // 清理远离的卡片（保留当前 ± 1）
+  setTimeout(() => {
+    renderedSlots = renderedSlots.filter(({ idx: i, el }) => {
+      if (Math.abs(i - currentIdx) > 1) {
+        el.remove();
+        return false;
+      }
+      return true;
+    });
+  }, 500);
+
+  updateArrows();
+  updateCounter();
+  updateIndicators();
+}
+
+function nextCard() { goTo(currentIdx + 1); }
+function prevCard() { goTo(currentIdx - 1); }
+
+// ── 键盘 ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextCard(); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); prevCard(); }
+  if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+  if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+});
+
+// ── 触摸滑动 ──
+let touchStartX = 0;
+let touchStartY = 0;
+stage.addEventListener('touchstart', e => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+stage.addEventListener('touchend', e => {
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
+    if (dx < 0) nextCard();
+    else prevCard();
+  }
+});
+
+// ── 下载 4K 图片 ──
+async function downloadCard() {
+  const toast = document.getElementById('toast');
+  const currentSlot = renderedSlots.find(s => s.idx === currentIdx);
+  if (!currentSlot) return;
+
+  const cardInner = currentSlot.el.querySelector('.card-inner');
+  const btn = document.querySelector('.btn-download');
+
+  // 显示 loading
+  btn.textContent = '⏳ 渲染中...';
+  btn.disabled = true;
+  toast.textContent = '正在生成 4K 图片...';
+  toast.classList.add('show');
+
+  try {
+    // 获取卡片实际尺寸
+    const rect = cardInner.getBoundingClientRect();
+    const baseW = rect.width;
+    const baseH = rect.height;
+
+    // 目标 4K：长边 ~3840px，短边 ~2880px（3:4）
+    const targetLong = 3840;
+    const targetShort = 2880;
+    // 卡片是 3:4，所以宽短高长
+    const scale = targetShort / baseW; // 让宽度达到 2880px
+
+    const canvas = await html2canvas(cardInner, {
+      scale: scale,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      windowWidth: cardInner.scrollWidth,
+      windowHeight: cardInner.scrollHeight,
+    });
+
+    // 下载
+    const link = document.createElement('a');
+    const label = cardsData[currentIdx].label || 'WeMD组件';
+    link.download = `WeMD_${String(currentIdx + 1).padStart(2, '0')}_${label.replace(/[\/\\:*?"<>|]/g, '-')}.png`;
+    link.href = canvas.toDataURL('image/png', 1.0);
+    link.click();
+
+    const actualW = Math.round(canvas.width);
+    const actualH = Math.round(canvas.height);
+    toast.textContent = `✅ 已下载！${actualW}×${actualH} px`;
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  } catch (err) {
+    console.error(err);
+    toast.textContent = '❌ 生成失败，请重试';
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  } finally {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 下载 4K 图片`;
+    btn.disabled = false;
+  }
+}
+
+// ── 启动 ──
+buildIndicators();
+render();
+</script>
+
+</body>
+</html>

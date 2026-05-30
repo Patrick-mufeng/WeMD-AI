@@ -396,13 +396,54 @@ transform: rotate(0deg);
 
 ### 5.5 引用/金句
 
+五种紧凑风格，按场景选用。**原则：少占空间、视觉突出、有呼吸感。**
+
+---
+
+**风格A — 左侧竖线（最经典，推荐首选）**
+
 ```html
-<section style="margin:20px 0;padding:16px;text-align:center;background:#fafafa;box-sizing:border-box;">
-  <p style="font-size:15px;font-weight:bold;color:#accent;line-height:1.9;letter-spacing:0.5px;margin:0;">
-    金句内容...
-  </p>
+<section style="margin:16px 0;padding:6px 0 6px 12px;border-left:3px solid #primary;box-sizing:border-box;max-width:100%!important;">
+  <p style="font-size:15px;font-weight:bold;color:#ink;line-height:1.85;letter-spacing:0.5px;margin:0;box-sizing:border-box;max-width:100%!important;">金句内容...</p>
 </section>
 ```
+
+**风格B — 大引号装饰（文艺气质）**
+
+```html
+<section style="margin:16px 0;position:static;box-sizing:border-box;max-width:100%!important;">
+  <p style="font-size:36px;color:#primary;line-height:0.6;margin:0 0 -8px 0;box-sizing:border-box;max-width:100%!important;">"</p>
+  <p style="font-size:14px;color:#ink;line-height:1.85;letter-spacing:0.5px;margin:0;padding:0 0 0 8px;box-sizing:border-box;max-width:100%!important;">金句内容...</p>
+</section>
+```
+
+**风格C — 渐变底色条（紧凑现代）**
+
+```html
+<section style="margin:16px 0;padding:10px 14px;background:linear-gradient(90deg, rgba(0,0,0,0.04), transparent);border-radius:4px;box-sizing:border-box;max-width:100%!important;">
+  <p style="font-size:14px;font-weight:bold;color:#ink;line-height:1.8;letter-spacing:0.5px;margin:0;box-sizing:border-box;max-width:100%!important;">金句内容...</p>
+</section>
+```
+
+**风格D — 标签徽章式（带「金句」标记）**
+
+```html
+<section style="margin:16px 0;padding:10px 14px;background:rgba(0,0,0,0.02);border-radius:6px;box-sizing:border-box;max-width:100%!important;">
+  <section style="display:inline-block;padding:2px 8px;background:#primary;color:#fff;font-size:8px;font-weight:bold;letter-spacing:1.5px;margin-bottom:6px;border-radius:3px;box-sizing:border-box;">金句</section>
+  <p style="font-size:14px;color:#ink;line-height:1.85;letter-spacing:0.5px;margin:0;box-sizing:border-box;max-width:100%!important;">金句内容...</p>
+</section>
+```
+
+---
+
+**选用指南**：
+
+| 风格 | 适用场景 | 特点 |
+|------|---------|------|
+| A 左侧竖线 | 技术/商业/严肃文章 | 经典稳重，极省空间 |
+| B 大引号 | 散文/故事/情感类 | 文艺感，大号引号有识别度 |
+| C 渐变底色 | 快节奏/新媒体文 | 现代感，视觉层次好 |
+| D 标签式 | 教程/干货/总结 | 有「划重点」心理暗示 |
 
 ### 5.6 数据展示（三列）
 
@@ -569,6 +610,68 @@ transform: rotate(0deg);
 | 标签/角标 | 8-9px | 徽章、标签、字母标记 |
 | 底部文字 | 10px | 版权、来源等 |
 | 分割线装饰 | 12-13px | 点点点分隔 |
+
+### 5.17 代码块
+
+用于展示代码片段、配置、终端命令等。使用 `<section>` + `<p>` + `<span>` 模拟，**禁止使用 `<pre>` 和 `<code>` 标签**。
+
+```html
+<!-- 带语言标签的代码块 -->
+<section style="margin:16px 0;border-radius:8px;overflow:hidden;box-sizing:border-box;max-width:100%!important;">
+  <!-- 顶部栏：语言标签 -->
+  <section style="padding:8px 14px;background:rgba(0,0,0,0.75);display:flex;flex-flow:row;align-items:center;gap:8px;box-sizing:border-box;max-width:100%!important;">
+    <section style="width:10px;height:10px;border-radius:50%;background:#ff5f57;box-sizing:border-box;"></section>
+    <section style="width:10px;height:10px;border-radius:50%;background:#febc2e;box-sizing:border-box;"></section>
+    <section style="width:10px;height:10px;border-radius:50%;background:#28c840;box-sizing:border-box;"></section>
+    <p style="flex:1;text-align:right;font-size:9px;color:rgba(255,255,255,0.5);margin:0;letter-spacing:1px;box-sizing:border-box;max-width:100%!important;">python</p>
+  </section>
+  <!-- 代码内容区 -->
+  <section style="padding:14px 16px;background:rgba(0,0,0,0.85);box-sizing:border-box;max-width:100%!important;">
+    <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:rgba(255,255,255,0.9);line-height:1.8;margin:0;white-space:pre-wrap;word-break:break-all;box-sizing:border-box;max-width:100%!important;">
+<span style="color:#c678dd;">import</span> <span style="color:#e5c07b;">requests</span>
+<span style="color:#c678dd;">import</span> <span style="color:#e5c07b;">json</span>
+
+<span style="color:#5c6370;"># 调用 API</span>
+<span style="color:#e5c07b;">resp</span> = <span style="color:#e5c07b;">requests</span>.post(
+    <span style="color:#98c379;">"http://localhost:5000/api/generate"</span>,
+    <span style="color:#e5c07b;">json</span>={<span style="color:#98c379;">"article"</span>: <span style="color:#98c379;">"文章内容"</span>, <span style="color:#98c379;">"theme"</span>: <span style="color:#98c379;">"cyber"</span>}
+)
+<span style="color:#c678dd;">print</span>(<span style="color:#e5c07b;">resp</span>.json()[<span style="color:#98c379;">"html"</span>])
+    </p>
+  </section>
+</section>
+```
+
+**两种变体**：
+
+**变体 A — 无顶部栏（更简洁）**
+```html
+<section style="margin:16px 0;padding:14px 16px;background:rgba(0,0,0,0.05);border-radius:6px;box-sizing:border-box;max-width:100%!important;">
+  <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#333;line-height:1.8;margin:0;white-space:pre-wrap;word-break:break-all;box-sizing:border-box;max-width:100%!important;">$ pip install flask requests</p>
+</section>
+```
+
+**变体 B — 暗色终端风格（适合技术类文章）**
+```html
+<section style="margin:16px 0;border-radius:8px;overflow:hidden;box-sizing:border-box;max-width:100%!important;">
+  <section style="padding:10px 14px;background:#1e1e2e;box-sizing:border-box;max-width:100%!important;">
+    <p style="font-size:11px;color:rgba(255,255,255,0.4);margin:0;letter-spacing:1px;box-sizing:border-box;max-width:100%!important;">$ terminal</p>
+  </section>
+  <section style="padding:12px 16px;background:#181825;box-sizing:border-box;max-width:100%!important;">
+    <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.8;margin:0;box-sizing:border-box;max-width:100%!important;">curl -X POST http://localhost:5000/api/generate \</p>
+    <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.8;margin:0;box-sizing:border-box;max-width:100%!important;">  -H "Authorization: Bearer sk-xxx" \</p>
+    <p style="font-size:12px;font-family:'SF Mono','Menlo','Consolas','Courier New',monospace;color:#cdd6f4;line-height:1.8;margin:0;box-sizing:border-box;max-width:100%!important;">  -d '{"article":"...","theme":"cyber"}'</p>
+  </section>
+</section>
+```
+
+**色彩规则**：
+- 代码块底色使用 `rgba(0,0,0,0.85)`（暗色）或 `rgba(0,0,0,0.05)`（亮色），根据主题选择
+- 代码文字使用等宽字体栈：`'SF Mono','Menlo','Consolas','Courier New',monospace`
+- 代码字号 11-12px，行高 1.7-1.8
+- 语法高亮通过 `<span style="color:#xxx">` 实现，使用柔和色值避免刺眼
+- 顶部栏三色圆点（红黄绿）为可选装饰，适合展示完整代码文件
+- 内联代码（行内）用 `<span style="font-family:monospace;background:rgba(0,0,0,0.06);padding:1px 4px;border-radius:3px;font-size:12px;">code</span>` 实现
 
 ---
 
